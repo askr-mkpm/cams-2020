@@ -1,11 +1,9 @@
-PVector canvasSize;
 int canvasSize_x, canvasSize_y;
 
 void settings()
 {
-    canvasSize = new PVector(500,500);
-    canvasSize_x = int(canvasSize.x);
-    canvasSize_y = int(canvasSize.y);
+    canvasSize_x = 500;
+    canvasSize_y = 500;
 
     size(canvasSize_x, canvasSize_y);
 }
