@@ -1,33 +1,35 @@
-// Example 15-6: Setting pixels according to their 2D location
+import processing.video.*;
 
-size(500, 500);
-loadPixels();
+Capture cam;
 
-// Two loops allow us to visit every column (x) and every row (y).
-
-// Loop through every pixel column
-for (int x = 0; x < width; x++ ) 
+void setup() 
 {
-  // Loop through every pixel row
-  for (int y = 0; y < height; y++ ) {
+  size(640, 480);
 
-    // Use the formula to find the 1D location
-    int loc = x + y * width; 
-    int pixCol = pixels[loc];  
+  String[] cameras = Capture.list();
 
-    float r = red(pixCol);   
-    float g = green(pixCol);
-    float b = blue(pixCol);  
+  if (cameras == null) {
+    println("Failed to retrieve the list of available cameras, will try the default...");
+    cam = new Capture(this, 640, 480);
+  } else if (cameras.length == 0) {
+    println("There are no cameras available for capture.");
+    exit();
+  } else {
+    println("Available cameras:");
+    printArray(cameras);
 
-    // If even column
-    if (x % 2 == 0) { 
-      pixels[loc] = color(r, 0, b);;
-      
-      // If odd column
-    } else { 
-      pixels[loc] = color(0);
-    }
+    cam = new Capture(this, cameras[0]);
+
+    cam.start();
   }
 }
 
-  updatePixels();
+void draw() 
+{
+  if (cam.available() == true) {
+    cam.read();
+  }
+  image(cam, 0, 0, width, height);
+  saveFrame("frames/line-#####.png");
+
+}

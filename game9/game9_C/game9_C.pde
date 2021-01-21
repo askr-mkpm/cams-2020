@@ -1,33 +1,68 @@
-// Example 15-6: Setting pixels according to their 2D location
+import gab.opencv.*;
+import processing.video.*;
 
-size(500, 500);
-loadPixels();
+OpenCV opencv;
+Movie video;
+Capture cam;
 
-// Two loops allow us to visit every column (x) and every row (y).
+PVector ballPos;
 
-// Loop through every pixel column
-for (int x = 0; x < width; x++ ) 
+void setup() 
 {
-  // Loop through every pixel row
-  for (int y = 0; y < height; y++ ) {
+  size(568, 320);
+  // video = new Movie(this, "sample1.mov");
+  opencv = new OpenCV(this, 568, 320);
+  // video.loop();
+  // video.play();
 
-    // Use the formula to find the 1D location
-    int loc = x + y * width; 
-    int pixCol = pixels[loc];  
+    String[] cameras = Capture.list();
 
-    float r = red(pixCol);   
-    float g = green(pixCol);
-    float b = blue(pixCol);  
+  if (cameras == null) {
+    println("Failed to retrieve the list of available cameras, will try the default...");
+    cam = new Capture(this, 568, 320);
+  } else if (cameras.length == 0) {
+    println("There are no cameras available for capture.");
+    exit();
+  } else {
+    println("Available cameras:");
+    printArray(cameras);
 
-    // If even column
-    if (x % 2 == 0) { 
-      pixels[loc] = color(r, 0, b);;
-      
-      // If odd column
-    } else { 
-      pixels[loc] = color(0);
-    }
+    cam = new Capture(this, cameras[0]);
+
+    cam.start();
   }
+
+  ballPos = new PVector(width/2, height/2);
 }
 
-  updatePixels();
+
+void draw() 
+{
+  background(0);
+
+    if (cam.available() == true) {
+    cam.read();
+  }
+
+    opencv.loadImage(cam);
+
+    opencv.calculateOpticalFlow();
+
+    stroke(255, 0, 0);
+
+    opencv.drawOpticalFlow();
+
+    PVector aveFlow = opencv.getAverageFlow();
+    int flowScale = 50;
+
+    stroke(255);
+    strokeWeight(2);
+    line(cam.width/2, cam.height/2, cam.width/2 + aveFlow.x * flowScale, cam.height / 2 + aveFlow.y * flowScale);
+
+    stroke(0);
+    PVector vec = opencv.getFlowAt(int(ballPos.x), int(ballPos.y));
+    ballPos.add(vec);
+
+    ellipse(ballPos.x, ballPos.y, 100, 100);
+
+}

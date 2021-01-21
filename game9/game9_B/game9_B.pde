@@ -1,33 +1,55 @@
-// Example 15-6: Setting pixels according to their 2D location
+import gab.opencv.*;
+import java.awt.Rectangle;
+import processing.video.*;
 
-size(500, 500);
-loadPixels();
+PImage img;
+Capture cam;
 
-// Two loops allow us to visit every column (x) and every row (y).
+OpenCV opencv;
+Rectangle[] faces;
 
-// Loop through every pixel column
-for (int x = 0; x < width; x++ ) 
+void setup() 
 {
-  // Loop through every pixel row
-  for (int y = 0; y < height; y++ ) {
+  size(1080, 720);
+  img = loadImage("blackRect.PNG");
 
-    // Use the formula to find the 1D location
-    int loc = x + y * width; 
-    int pixCol = pixels[loc];  
+  String[] cameras = Capture.list();
 
-    float r = red(pixCol);   
-    float g = green(pixCol);
-    float b = blue(pixCol);  
+  if (cameras == null) 
+  {
+    println("Failed to retrieve the list of available cameras, will try the default...");
+    cam = new Capture(this, 640, 480);
+  } else if (cameras.length == 0) {
+    println("There are no cameras available for capture.");
+    exit();
+  } else {
+    println("Available cameras:");
+    printArray(cameras);
 
-    // If even column
-    if (x % 2 == 0) { 
-      pixels[loc] = color(r, 0, b);;
-      
-      // If odd column
-    } else { 
-      pixels[loc] = color(0);
-    }
+    cam = new Capture(this, cameras[0]);
+
+    cam.start();
   }
 }
 
-  updatePixels();
+void draw() {
+
+  opencv = new OpenCV(this, cam);
+  opencv.loadCascade(OpenCV.CASCADE_EYE);  
+  faces = opencv.detect();
+
+  // image(opencv.getInput(), 0, 0);
+  if (cam.available() == true) {
+    cam.read();
+  }
+  image(cam, 0, 0, width, height);
+
+  // noFill();
+  // stroke(0, 255, 0);
+  // strokeWeight(3);
+  for (int i = 0; i < faces.length; i++) {
+    image(img, faces[i].x, faces[i].y);
+    // rect(faces[i].x, , faces[i].width, faces[i].height);
+  }
+
+}
