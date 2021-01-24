@@ -1,11 +1,6 @@
-int canvasSize_x, canvasSize_y;
-
 void settings()
 {
-    canvasSize_x = 500;
-    canvasSize_y = 500;
-
-    size(canvasSize_x, canvasSize_y);
+    size(500, 500);
 }
 
 void setup() 
@@ -13,7 +8,7 @@ void setup()
     int lineNum = 20;
     float pi = acos(-1);
 
-    drawPattern(canvasSize_x, canvasSize_y, lineNum);
+    drawPattern(width, height, lineNum);
 }
 
 void drawPattern(int x, int y, int lineNum)
