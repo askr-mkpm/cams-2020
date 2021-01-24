@@ -2,7 +2,7 @@ PShader frag;
 
 void setup() 
 {
-    size(600, 600, P2D);
+    size(860, 540, P2D);
     frag = loadShader("bubble.glsl");
 }
 
