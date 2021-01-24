@@ -108,6 +108,7 @@ PVector trace(Ray ray, int n) {
         // 2. 色の積を計算するために、 multC(PVector, PVector)->PVector 関数を
         // 利用することができます。これは二つのベクトルの次元ごとの積を新たなベクトルとして返します。
          /*　ray方向から入ってくる入射光と物体色の積を結果に足す　*/
+	// わからん....
         float xx = hit.material.Color().x * hit.material.reflection.x*PVector.dot(hit.normal, ray.d)*5;
         float yy = hit.material.Color().y * hit.material.reflection.y*PVector.dot(hit.normal, ray.d)*5;
         float zz = hit.material.Color().z * hit.material.reflection.z*PVector.dot(hit.normal, ray.d)*5;
