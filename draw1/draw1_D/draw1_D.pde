@@ -1,11 +1,6 @@
-int canvasSize_x, canvasSize_y;
-
 void settings()
 {
-    canvasSize_x = 500;
-    canvasSize_y = 500;
-
-    size(canvasSize_x, canvasSize_y);
+    size(500, 500);
 }
 
 void setup() 
