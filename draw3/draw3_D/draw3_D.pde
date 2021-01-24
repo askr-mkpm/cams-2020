@@ -7,7 +7,8 @@ float dist[];
 float ang[];
 float sizeArr[];
 
-void setup() {
+void setup() 
+{
   size(800, 800);
   cen = new PVector();
   cen.x = width/2;

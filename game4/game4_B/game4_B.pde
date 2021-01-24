@@ -1,4 +1,3 @@
-int canvasSize_x, canvasSize_y;
 float halfWidth;//画面の横幅の半分
 float halfHeight;//画面の縦幅の半分
 final float PI = acos(-1);
@@ -9,9 +8,7 @@ float bs = 30;
 
 void settings()
 {
-    canvasSize_x = 500;
-    canvasSize_y = 500;
-    size(canvasSize_x, canvasSize_y);
+    size(500, 500);
 
     halfWidth = width / 2;
     halfHeight = height / 2;

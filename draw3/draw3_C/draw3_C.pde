@@ -7,7 +7,8 @@ float dist[];//中心からの距離
 float ang[];//中心からの角度
 float sizeArr[];
 
-void setup() {
+void setup() 
+{
   size(800, 800);
   cen = new PVector();
   cen.x = width/2;
