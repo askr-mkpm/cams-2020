@@ -1,5 +1,8 @@
+//距離関数の参照
 //https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
-// https://qiita.com/aa_debdeb/items/4c35f59cc6ead09c822d
+
+//屈折表現の参照
+//https://qiita.com/aa_debdeb/items/4c35f59cc6ead09c822d
 //https://stackoverflow.com/questions/9841863/reflection-refraction-with-chromatic-aberration-eye-correction
 
 precision highp float;
@@ -31,40 +34,18 @@ vec3 round(vec3 p, float c)
 	return r;
 }
 
-vec3 opTwist(vec3 p, float k)
-{
-    float c = cos(k*p.y);
-    float s = sin(k*p.y);
-    mat2  m = mat2(c,-s,s,c);
-    vec3  q = vec3(m*p.xz,p.y);
-    return q;
-}
-
 vec3 opRepLim( in vec3 p, in float c, in vec3 l)
 {
 	vec3 r = round(p,c);
     return p-c*clamp(r,-l,l);
 }
 
-vec3 hsv(float h,float s,float v)
-{
-    return((clamp(abs(fract(h+vec3(0.,2.,1.)/3.)*6.-3.)-1.,0.,1.)-1.)*s+1.)*v;
-}
-
-float rand(vec3 n)
-{ 
-    return fract(sin(dot(n, vec3(12.9898, 4.1414,14.6313))) * 43758.5453);
-}
-
-float rand_(vec2 n) { 
-	return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
-}
-
 //---
 
-float random (in vec2 st) {
+float random (in vec2 st) 
+{
     return fract(sin(dot(st.xy,
-                         vec2(12.9898,78.233)))*
+        vec2(12.9898,78.233)))*
         43758.5453123);
 }
 
@@ -93,9 +74,9 @@ vec3 noise3(vec3 x)
 				 noise(x) );
 }
 
-// Based on Morgan McGuire @morgan3d
 // https://www.shadertoy.com/view/4dS3Wd
-float noise_ (in vec2 st) {
+float noise_fbm (in vec2 st) 
+{
     vec2 i = floor(st);
     vec2 f = fract(st);
 
@@ -112,28 +93,15 @@ float noise_ (in vec2 st) {
             (d - b) * u.x * u.y;
 }
 
-float noise_2(vec2 p){
-	vec2 ip = floor(p);
-	vec2 u = fract(p);
-	u = u*u*(3.0-2.0*u);
-	
-	float res = mix(
-		mix(rand_(ip),rand_(ip+vec2(1.0,0.0)),u.x),
-		mix(rand_(ip+vec2(0.0,1.0)),rand_(ip+vec2(1.0,1.0)),u.x),u.y);
-	return res*res;
-}
-
-
 #define OCTAVES 6
 float fbm (in vec2 st) 
 {
     float value = 0.0;
     float amplitude = .5;
 
-
     for (int i = 0; i < OCTAVES; i++) 
 	{
-        value += amplitude * noise_(st);
+        value += amplitude * noise_fbm(st);
         st *= 2.;
         amplitude *= .5;
     }
@@ -147,7 +115,6 @@ float sdSphere(vec3 p, float s)
     return length(p) - s;
 }
 
-//https://www.shadertoy.com/view/ld3SDl
 float sdBubble(vec3 p, float r)
 {
 	float  t = u_time * 2.5;
@@ -160,44 +127,38 @@ float sdBubble(vec3 p, float r)
 float sdOctahedron( vec3 p, float s)
 {
 	p.xy *= rot(pi*u_time*0.1);
-  p = abs(p);
-  float m = p.x+p.y+p.z-s;
-  vec3 q;
-       if( 3.0*p.x < m ) q = p.xyz;
-  else if( 3.0*p.y < m ) q = p.yzx;
-  else if( 3.0*p.z < m ) q = p.zxy;
-  else return m*0.57735027;
-    
-  float k = clamp(0.5*(q.z-q.y+s),0.0,s); 
-  return length(vec3(q.x,q.y-s+k,q.z-k)); 
+	p = abs(p);
+	float m = p.x+p.y+p.z-s;
+	vec3 q;
+		if( 3.0*p.x < m ) q = p.xyz;
+	else if( 3.0*p.y < m ) q = p.yzx;
+	else if( 3.0*p.z < m ) q = p.zxy;
+	else return m*0.57735027;
+
+	float k = clamp(0.5*(q.z-q.y+s),0.0,s); 
+	return length(vec3(q.x,q.y-s+k,q.z-k)); 
 }
 
 float sdOctBubble( vec3 p, float s)
 {
-  p = abs(p);
-  float  t = u_time * 2.5;
-  	vec3 n = vec3(sin(t * 0.5), sin(t * 0.3), cos(t * 0.2));
+	p = abs(p);
+	float  t = u_time * 2.5;
+	vec3 n = vec3(sin(t * 0.5), sin(t * 0.3), cos(t * 0.2));
 	vec3 q = 0.35 * (noise3(p + n) - 0.5);
 	p += q;
-  return (p.x+p.y+p.z-s)*0.57735027;
+	return (p.x+p.y+p.z-s)*0.57735027;
 }
 
 float sdRoundBox( vec3 p, vec3 b, float r )
 {
 	// p.yx *= rot(pi*0.25);
 	p.zx *= rot(pi*u_time*0.1);
-  vec3 q = abs(p) - b;
-  return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0) - (r-0.05*sin(u_time*0.1));
+  	vec3 q = abs(p) - b;
+  	return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0) - (r-0.05*sin(u_time*0.1));
 }
 
-vec2 pMod2(inout vec2 p, float size)
-{
-	float halfsize = size*0.5;
-	vec2 c = floor((p+halfsize)/size);
-	p = mod(p+halfsize,size)-halfsize;
-	return c;
-}
-
+// domain rep
+// https://www.shadertoy.com/view/4dcBRN
 float lisp(vec3 p, float r, float s)
 {
 	float cc = 5.;
@@ -205,47 +166,27 @@ float lisp(vec3 p, float r, float s)
 	p.x += sin(u_time* t)*cc;
 	p.y += 1.2 * cos(u_time * 0.5*t)*cc;
 	p.z += 2. * sin(u_time*0.1*t)*cc;
-	
-	// return sdSphere(opRepLim(p,r, vec3(1.0, 1.0, 1.0)),s);
+
 	return sdBubble(opRepLim(p,r, vec3(1.0, 1.0, 1.0)),s);
 }
 
-float rbe(vec3 p)
-{
-	float d = lisp(p, 15., 1.5);
-	return d;
-}
-
-float randmp(vec2 t)
-{
-	return (rand_(t)-0.5)*2.;
-}
-
-//https://www.shadertoy.com/view/4dcBRN
 float randBubble(vec3 p)
 {
-
-	float d = rbe(p);
+	float d = lisp(p, 15., 1.5);
 	float t = 20.;
     return d;
 }
 
-float sdBox( vec3 p, vec3 b )
-{
-  vec3 q = abs(p) - b;
-  return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
-}
-
 float sdCylinder( vec3 p, vec3 c )
 {
-  return length(p.xz-c.xy)-c.z;
+  	return length(p.xz-c.xy)-c.z;
 }
 
 float sdBoundingBox( vec3 p, vec3 b, float e )
 {
-       p = abs(p  )-b;
-  vec3 q = abs(p+e)-e;
-  return min(min(
+    p = abs(p  )-b;
+  	vec3 q = abs(p+e)-e;
+  	return min(min(
       length(max(vec3(p.x,q.y,q.z),0.0))+min(max(p.x,max(q.y,q.z)),0.0),
       length(max(vec3(q.x,p.y,q.z),0.0))+min(max(q.x,max(p.y,q.z)),0.0)),
       length(max(vec3(q.x,q.y,p.z),0.0))+min(max(q.x,max(q.y,p.z)),0.0));
@@ -253,10 +194,10 @@ float sdBoundingBox( vec3 p, vec3 b, float e )
 
 float sdCappedTorus(in vec3 p, in vec2 sc, in float ra, in float rb)
 {
-p.yz = p.yz*rot(pi*0.5);
-  p.x = abs(p.x);
-  float k = (sc.y*p.x>sc.x*p.y) ? dot(p.xy,sc) : length(p.xy);
-  return sqrt( dot(p,p) + ra*ra - 2.0*ra*k ) - rb;
+	p.yz = p.yz*rot(pi*0.5);
+	p.x = abs(p.x);
+	float k = (sc.y*p.x>sc.x*p.y) ? dot(p.xy,sc) : length(p.xy);
+	return sqrt( dot(p,p) + ra*ra - 2.0*ra*k ) - rb;
 }
 
 //---
@@ -266,7 +207,6 @@ float easeInOutCubic(float x)
 	return (x < 0.5) ? 4. * x * x * x : 1. - pow(-2. * x + 2., 3.) / 2.;
 	// return 1. - pow(1. - x, 3.);
 }
-
 
 float easeInQuad(float x) 
 {
@@ -335,56 +275,23 @@ vec3 getNormal(vec3 p)
 
 float rI = 1.5;
 vec3 lightDir = normalize(vec3(1.0, .0, 1.0));
-vec3 lightColor = vec3(2.0);
-vec3 substanceColor = vec3(0.90, 0.95, 1.0);
-
-float Maxv3 (vec3 p)
-{
-  return max (p.x, max (p.y, p.z));
-}
-
-vec2 Hashv2v2 (vec2 p)
-{
-  vec2 cHashVA2 = vec2 (37., 39.);
-  return fract (sin (vec2 (dot (p, cHashVA2), dot (p + vec2 (1., 0.), cHashVA2))) * 43758.54);
-}
-
-float Noisefv2 (vec2 p)
-{
-  vec2 t, ip, fp;
-  ip = floor (p);  
-  fp = fract (p);
-  fp = fp * fp * (3. - 2. * fp);
-  t = mix (Hashv2v2 (ip), Hashv2v2 (ip + vec2 (0., 1.)), fp.y);
-  return mix (t.x, t.y, fp.x);
-}
-
-float Fbm2 (vec2 p)
-{
-  float f, a;
-  f = 0.;
-  a = 1.;
-  for (int j = 0; j < 5; j ++) {
-    f += a * Noisefv2 (p);
-    a *= 0.5;
-    p *= 2.;
-  }
-  return f * (1. / 1.9375);
-}
+vec3 lightCol = vec3(2.0);
+vec3 subCol = vec3(0.90, 0.95, 1.0);
 
 //https://www.shadertoy.com/view/3lf3zX
 vec3 starPat (vec3 rd, float scl)
 {
-  vec3 tm, qn, u;
-  vec2 q;
-  float f;
-  tm = -1. / max (abs (rd), 0.0001);
-  qn = - sign (rd) * step (tm.zxy, tm) * step (tm.yzx, tm);
-  u = Maxv3 (tm) * rd;
-  q = atan (vec2 (dot (u.zxy, qn), dot (u.yzx, qn)), vec2 (1.)) / pi;
-  f = 0.57 * (Fbm2 (11. * dot (0.5 * (qn + 1.), vec3 (1., 2., 4.)) + 531.13 * scl * q) +
-      Fbm2 (13. * dot (0.5 * (qn + 1.), vec3 (1., 2., 4.)) + 571.13 * scl * q.yx));
-  return 8. * vec3 (1., 1., 0.8) * pow (f, 16.);
+	vec3 tm, qn, u;
+	vec2 q;
+	float f;
+	tm = -1. / max (abs (rd), 0.0001);
+	qn = - sign (rd) * step (tm.zxy, tm) * step (tm.yzx, tm);
+	u = max (tm.x, max (tm.y, tm.z)) * rd;
+	
+	q = atan (vec2 (dot (u.zxy, qn), dot (u.yzx, qn)), vec2 (1.)) / pi;
+	f = 0.57 * (fbm (11. * dot (0.5 * (qn + 1.), vec3 (1., 2., 4.)) + 731.13 * scl * q) +
+		fbm (13. * dot (0.5 * (qn + 1.), vec3 (1., 2., 4.)) + 771.13 * scl * q.yx));
+	return 8. * vec3 (1., 1., 0.8) * pow (f, 16.);
 }
 
 vec3 sky(vec3 lightDir, vec3 rd, vec3 ro)
@@ -407,21 +314,16 @@ vec3 sky(vec3 lightDir, vec3 rd, vec3 ro)
 	vec3 starCol = col + st* max(rd.y, -0.2)*3.;
 	col = mix(col, starCol, rd.y);
 
-	// clouds
 	float cloudSpeed = 0.01;
 	float cloudFlux = .5;
-	
-	// layer 1
+
 	vec3 cloudCol = mix(vec3(1.0, 1.0, 1.0), 0.35*sunCol,pow(sunWeight, 2.));
-	//////
 
 	vec2 uv = (rd*-1000./dot(rd, vec3(0.,1.,0.))).xz + u_time * 3.5;
     float clouds = 0.5*smoothstep(0.5,0.8,fbm(0.0002*uv+fbm(0.0002*uv+u_time*cloudFlux)));
 
 	col = mix(col, cloudCol, clouds);
 
-
-        
 	return col;
 }
 
@@ -462,8 +364,8 @@ vec3 march(vec3 ro, vec3 rd)
 
 			float f = schlickFresnel(rI, max(0.0, dot(-rd, n)));
 
-			vec3 spec = f * lightColor * pow(max(0.0, dot(refl, lightDir)), .5);
-			// return spec + substanceColor * samplingMarch(rayPos, refr);
+			vec3 spec = f * lightCol * pow(max(0.0, dot(refl, lightDir)), .5);
+			// return spec + subCol * samplingMarch(rayPos, refr);
 			
 			vec3 revRayPos = rayPos + refr * 1000.0;
 			for (int j = 0; j < 32; j++) 
@@ -477,11 +379,11 @@ vec3 march(vec3 ro, vec3 rd)
 
 					if (length(refr_2) > 0.01) 
 					{
-						rayCol = spec + substanceColor * samplingMarch(revRayPos, refr_2);
+						rayCol = spec + subCol * samplingMarch(revRayPos, refr_2);
 						return rayCol;
 					} else {
 						vec3 refl_2 = reflect(refr, -n2);
-						rayCol = spec + substanceColor * samplingMarch(revRayPos, refl_2);
+						rayCol = spec + subCol * samplingMarch(revRayPos, refl_2);
 						return rayCol;
 					}
 				}
