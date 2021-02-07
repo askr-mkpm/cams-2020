@@ -18,14 +18,14 @@ void reset() {
 void updateSolver() {
   
   //外力項 //速度とインクを流し込む
-  // addSourceVelocity();
+  addSourceVelocity();
   addSourceInk();
   
   //圧力項
   projectVelocity();
   
   //移流項
-  // advectVelocity();
+  advectVelocity();
   advectInk();
   
 }
@@ -84,13 +84,11 @@ void addSourceInk() {
       //srcRadは力を加える範囲を調整するパラメーター。GUIで変更できます
       float pct = 1 - dist(i,j, mx, my) / srcRad;
       pct = max(0, pct);
-      //マウス速度と重み付け関数を掛け合わせて速度に足す
-      PVector vel = PVector.mult(mouseVel, pct);
-      vel.x += ink[curr_v][i][j];
-      vel.y += ink[curr_v][i][j];
-      vel.limit(5); //速さが大きくなりすぎないように制限する
-      ink[curr_v][i][j] = vel.x;
-      ink[curr_v][i][j] = vel.y;
+
+      // PVector vel = PVector.mult(mouseVel, pct);
+      pct += ink[curr_i][i][j];
+      // vel.limit(5); //速さが大きくなりすぎないように制限する
+      ink[curr_i][i][j] = pct;
     }
   }
 }
@@ -103,7 +101,7 @@ void projectVelocity() {
     for (int j=1; j<yn-1; j++) {
           // div[][]は連立方程式の右辺、つまり反復計算において変化の無い値を事前計算して保存しておきます。
           // div[i][j]の値を計算してください
-          div[i][j] = pow(h,2)/(4*dt)*(((u[prev_v][i+1][j]-u[prev_v][i-1][j])/2*h)+((v[prev_v][i][j+1]-v[prev_v][i][j-1])/2*h));
+          div[i][j] = (pow(h,2)/(dt)) * (((u[curr_v][i+1][j]-u[curr_v][i-1][j])/(2*h))+((v[curr_v][i][j+1]-v[curr_v][i][j-1])/(2*h)));
     }
   }
 
@@ -119,7 +117,7 @@ void projectVelocity() {
         float prevPrs = prs[i][j];
         
             // ここに反復式を書いて、新しいprs[i][j]の値を求めてください
-          prs[i][j] = (prs[i+1][j]+prs[i-1][j]+prs[i][j+1]+prs[i][j-1])/4 - div[i][j];
+          prs[i][j] = ((prs[i+1][j]+prs[i-1][j]+prs[i][j+1]+prs[i][j-1])/4) - (div[i][j]/4);
         
         err = max(err ,abs(prevPrs-prs[i][j]));
       }
@@ -152,7 +150,6 @@ void projectVelocity() {
     }
   }
 }
-
 
 //壁の速度を強制することで、境界グリッドの勾配を調整する //圧力項で使用
 void enforceWallPressure() {
@@ -231,9 +228,10 @@ void advectVelocity() {
 
 void advectInk() {
   // currとprevのidの入れ替え. 
-  int tmp = curr_v;
-  curr_v = prev_v;
-  prev_v = tmp;
+
+  int tmp_i = curr_i;
+  curr_i = prev_i;
+  prev_i = tmp_i;
 
   //壁グリッド以外を全て参照
   for (int i=1; i<xn-1; i++) {
@@ -246,8 +244,8 @@ void advectInk() {
       px *= h;
       py *= h;
       //バックトレースで1フレーム前の位置を求める
-      px -= ink[prev_v][i][j] * dt;
-      py -= ink[prev_v][i][j] * dt;
+      px -= u[prev_v][i][j] * dt;
+      py -= v[prev_v][i][j] * dt;
       //px,pyを元の空間(0~gn)の空間に戻す
       px /= h;
       py /= h;
@@ -259,32 +257,23 @@ void advectInk() {
       idx = constrain(idx, 1, xn-2);
       idy = constrain(idy, 1, yn-2);
 
-      //近傍4グリッドの速度をu,vそれぞれバイリニア補間する
-      float v00, v10, v01, v11;
       float s = px - idx;
       float t = py - idy;
 
-      v00 = ink[prev_v][idx][idy];
-      v10 = ink[prev_v][idx+1][idy];
-      v01 = ink[prev_v][idx][idy+1];
-      v11 = ink[prev_v][idx+1][idy+1];
+      float i00, i10, i01, i11;
+
+      i00 = ink[prev_i][idx][idy];
+      i10 = ink[prev_i][idx+1][idy];
+      i01 = ink[prev_i][idx][idy+1];
+      i11 = ink[prev_i][idx+1][idy+1];
       //バイリニア補間を行う関数 s,tは0~1、v00, v10, v01, v11は4隅の値
-      float vx = bilinear(s,t, v00, v10, v01, v11);
+      float ii = bilinear(s,t, i00, i10, i01, i11);
 
-      v00 = ink[prev_v][idx][idy];
-      v10 = ink[prev_v][idx+1][idy];
-      v01 = ink[prev_v][idx][idy+1];
-      v11 = ink[prev_v][idx+1][idy+1];
-      float vy = bilinear(s,t, v00, v10, v01, v11);
+      ink[curr_i][i][j] = ii;
 
-      //更新後の値をcurr_vの配列に格納
-      ink[curr_v][i][j] = vx;
-      ink[curr_v][i][j] = vy;
     }
   }
 }
-
-
 
 //壁の速度を強制することで、境界グリッドの勾配を調整する // 粘性項で使用
 void enforceWallVelocityX() {
