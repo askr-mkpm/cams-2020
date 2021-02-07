@@ -84,13 +84,11 @@ void addSourceInk() {
       //srcRadは力を加える範囲を調整するパラメーター。GUIで変更できます
       float pct = 1 - dist(i,j, mx, my) / srcRad;
       pct = max(0, pct);
-      //マウス速度と重み付け関数を掛け合わせて速度に足す
-      PVector vel = PVector.mult(mouseVel, pct);
-      vel.x += ink[curr_v][i][j];
-      vel.y += ink[curr_v][i][j];
-      vel.limit(5); //速さが大きくなりすぎないように制限する
-      ink[curr_v][i][j] = vel.x;
-      ink[curr_v][i][j] = vel.y;
+
+      // PVector vel = PVector.mult(mouseVel, pct);
+      pct += ink[curr_v][i][j];
+      // vel.limit(5); //速さが大きくなりすぎないように制限する
+      ink[curr_v][i][j] = pct;
     }
   }
 }
