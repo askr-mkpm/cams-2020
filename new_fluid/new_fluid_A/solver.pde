@@ -86,9 +86,9 @@ void addSourceInk() {
       pct = max(0, pct);
 
       // PVector vel = PVector.mult(mouseVel, pct);
-      pct += ink[curr_v][i][j];
+      pct += ink[curr_i][i][j];
       // vel.limit(5); //速さが大きくなりすぎないように制限する
-      ink[curr_v][i][j] = pct;
+      ink[curr_i][i][j] = pct;
     }
   }
 }
