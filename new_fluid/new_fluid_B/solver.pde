@@ -84,13 +84,11 @@ void addSourceInk() {
       //srcRadは力を加える範囲を調整するパラメーター。GUIで変更できます
       float pct = 1 - dist(i,j, mx, my) / srcRad;
       pct = max(0, pct);
-      //マウス速度と重み付け関数を掛け合わせて速度に足す
-      PVector vel = PVector.mult(mouseVel, pct);
-      vel.x += ink[curr_v][i][j];
-      vel.y += ink[curr_v][i][j];
-      vel.limit(5); //速さが大きくなりすぎないように制限する
-      ink[curr_v][i][j] = vel.x;
-      ink[curr_v][i][j] = vel.y;
+
+      // PVector vel = PVector.mult(mouseVel, pct);
+      pct += ink[curr_v][i][j];
+      // vel.limit(5); //速さが大きくなりすぎないように制限する
+      ink[curr_v][i][j] = pct;
     }
   }
 }
@@ -103,7 +101,7 @@ void projectVelocity() {
     for (int j=1; j<yn-1; j++) {
           // div[][]は連立方程式の右辺、つまり反復計算において変化の無い値を事前計算して保存しておきます。
           // div[i][j]の値を計算してください
-          div[i][j] = pow(h,2)/(4*dt)*(((u[prev_v][i+1][j]-u[prev_v][i-1][j])/2*h)+((v[prev_v][i][j+1]-v[prev_v][i][j-1])/2*h));
+          div[i][j] = (pow(h,2)/(dt)) * (((u[curr_v][i+1][j]-u[curr_v][i-1][j])/(2*h))+((v[curr_v][i][j+1]-v[curr_v][i][j-1])/(2*h)));
     }
   }
 
@@ -119,7 +117,7 @@ void projectVelocity() {
         float prevPrs = prs[i][j];
         
             // ここに反復式を書いて、新しいprs[i][j]の値を求めてください
-          prs[i][j] = (prs[i+1][j]+prs[i-1][j]+prs[i][j+1]+prs[i][j-1])/4 - div[i][j];
+          prs[i][j] = ((prs[i+1][j]+prs[i-1][j]+prs[i][j+1]+prs[i][j-1])/4) - (div[i][j]/4);
         
         err = max(err ,abs(prevPrs-prs[i][j]));
       }
