@@ -12,9 +12,10 @@ void settings()
 
 void setup()
 {
-    PVector vecA = new PVector(1,1,1);
-    PVector vecB = new PVector(2,2,2);
-    vecA.add(vecB);
-    float magA = vecA.mag();
-    print("magnitude of VecA:"+magA);
+    PVector vecA = new PVector(1,2);
+    PVector unitA = new PVector();
+
+    unitA = PVector.div(vecA, sqrt(pow(vecA.x,2)+pow(vecA.y,2)));
+
+    print("UnitVector:"+unitA);
 }
