@@ -9,9 +9,9 @@ void draw(){
   background(255);
   ball.update();
 
-  if(mousePressed) {
+  // if(mousePressed) {
     ball.addForce();
-  }
+  // }
 }
 
 class Ball{  
