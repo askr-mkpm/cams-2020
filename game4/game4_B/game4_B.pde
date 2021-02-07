@@ -14,18 +14,17 @@ void settings()
     halfHeight = height / 2;
 }
 
-float speed = 0.02;
-float len = 80; //length of vector
+float speed = 2;
 
 void draw()
 {
   background(0);
 
-  float dirx = mouseX - bx;
-  float diry = mouseY - by;
+  PVector dir = new PVector(mouseX - bx, mouseY - by); 
+  dir.normalize();
    
-  bx += dirx * speed;
-  by += diry * speed;
+  bx += dir.x * speed;
+  by += dir.y * speed;
 
   ellipse(bx, by, bs, bs);
 }
